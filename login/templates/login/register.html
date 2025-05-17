@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" />
+</head>
+<body class="bg-black min-h-screen flex items-center justify-center px-4">
+
+  <div class="card w-full max-w-md shadow-2xl bg-neutral text-white">
+    <div class="card-body">
+      <h2 class="text-3xl font-bold text-center text-accent mb-6">Create an Account</h2>
+      
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- User form fields -->
+        <div>
+          <h3 class="text-xl font-semibold mb-3">User Info</h3>
+          {% for field in user_form %}
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text text-white">{{ field.label }}</span>
+              </label>
+              {{ field }}
+              {% if field.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ field.errors.0 }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Profile form fields -->
+        <div>
+          <h3 class="text-xl font-semibold mb-3">Profile Info</h3>
+          {% for field in profile_form %}
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text text-white">{{ field.label }}</span>
+              </label>
+              {{ field }}
+              {% if field.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ field.errors.0 }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-accent w-full">Register</button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <a href="{% url 'login' %}" class="link link-info">Already have an account? Login</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
