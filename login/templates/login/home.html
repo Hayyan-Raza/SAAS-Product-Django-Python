@@ -1,118 +1,238 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <title>Dashboard - SAAS</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.7.6/dist/full.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.7.6/dist/full.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+
+  <style>
+    .logo-font {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes shimmer {
+      0%, 100% {
+        opacity: 0;
+        transform: scale(0.8) rotate(10deg);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.1) rotate(-10deg);
+      }
+    }
+
+    .star {
+      display: inline-block;
+      font-size: 1.8rem;
+      animation-name: shimmer;
+      animation-duration: 1.5s;
+      animation-iteration-count: infinite;
+      opacity: 0;
+      transform-origin: center;
+      margin: 0 3px;
+    }
+
+    .star:nth-child(1) { animation-delay: 0s; }
+    .star:nth-child(2) { animation-delay: 0.35s; }
+    .star:nth-child(3) { animation-delay: 0.7s; }
+    .star:nth-child(4) { animation-delay: 1.05s; }
+
+    .resume-paper {
+      background: var(--p-bg);
+      width: 100%;
+      max-width: 800px;
+      min-height: 1100px;
+      padding: 2rem;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      font-family: 'Poppins', sans-serif;
+      border-radius: 0.75rem;
+      margin-top: 5rem;
+      color: var(--p-text);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .floating-form {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      width: 100%;
+      max-width: 700px;
+      padding: 0 1rem;
+    }
+
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.85);
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.5rem;
+      color: #3b82f6;
+      font-weight: 600;
+    }
+
+    #themeToggleBtn {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+    }
+  </style>
 </head>
-<body class="bg-base-200">
+<body class="bg-base-100 text-base-content min-h-screen flex flex-col">
+
+  <!-- Theme Toggle Button -->
+  <button id="themeToggleBtn" class="btn btn-sm btn-primary">
+    🌙 Dark Mode
+  </button>
 
   <!-- Navbar -->
-  <div class="navbar bg-base-100 shadow-md">
+  <div class="navbar bg-base-200 px-6 border-b border-base-300 rounded-b-lg">
     <div class="flex-1">
-      <a class="btn btn-ghost text-xl">SAAS Dashboard</a>
+      <span class="logo-font text-base-content">
+        <strong style="font-family: Poppins, sans-serif; font-weight: 900;">Resume.io</strong>
+      </span>
     </div>
-    <div class="flex gap-2">
-      <div class="dropdown dropdown-end">
-        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-          <div class="w-10 rounded-full">
-            <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+    <div class="flex-none">
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-error rounded-full px-4" style="margin-right:140px ;">
+          Logout
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex flex-1 overflow-hidden pt-8 pb-24">
+
+    <!-- Left Sidebar -->
+    <aside class="w-1/5 bg-base-200 shadow-lg p-4 rounded-lg hidden md:block">
+      <h2 class="font-bold text-lg mb-4 text-base-content">Suggestions</h2>
+      <ul class="space-y-2 text-primary">
+        <li><a href="#" class="hover:underline">Game Dev Resume</a></li>
+        <li><a href="#" class="hover:underline">Unity Developer Resume</a></li>
+        <li><a href="#" class="hover:underline">Frontend Intern Resume</a></li>
+        <li><a href="#" class="hover:underline">AI Research CV</a></li>
+      </ul>
+    </aside>
+
+    <!-- Center Content -->
+    <main class="flex-1 p-6 flex flex-col items-center bg-transparent overflow-y-auto">
+
+      <!-- Welcome Message -->
+      <div class="w-full max-w-2xl bg-base-200 shadow-lg p-6 rounded-lg mb-6 text-base-content">
+        <h1 class="text-2xl font-semibold mb-2">Welcome, <strong>{{ request.user.username }}</strong> 👋</h1>
+        <p>Build stunning AI-powered resumes with just a few clicks.</p>
+      </div>
+
+      <!-- Resume Output -->
+      {% if html %}
+      <div class="w-full flex justify-center items-center mb-10 px-4">
+        <div class="resume-paper">
+          <h2 class="text-2xl font-bold mb-6 text-center border-b pb-4">Generated Resume</h2>
+          <div class="whitespace-pre-wrap text-base leading-relaxed" contenteditable="true">
+            {{ html | safe }}
           </div>
         </div>
-        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-          <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <li><button type="submit">Logout</button></li>
-          </form>
-        </ul>
       </div>
-    </div>
+      {% endif %}
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside class="w-1/5 bg-base-200 shadow-lg p-4 rounded-lg hidden md:block text-base-content">
+      <h2 class="font-bold text-lg mb-4">Tips</h2>
+      <ul class="text-sm space-y-2">
+        <li>✅ Keep your resume short</li>
+        <li>✅ Focus on achievements</li>
+        <li>✅ Use strong action words</li>
+        <li>✅ Tailor for each job</li>
+      </ul>
+    </aside>
   </div>
 
-  <!-- Welcome Banner -->
-  <div class="p-4">
-    <div class="alert alert-info shadow-lg">
-      <div>
-        <span>Welcome, <strong>{{ request.user.username }}</strong>! Analyze websites using Lighthouse insights.</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Search Section -->
-  <div class="p-4">
-    <form method="post" action="{% url 'analyze_website' %}">
+  <!-- Floating Input Form -->
+  <div class="floating-form">
+    <form method="post" action="{% url 'generate_resume' %}" class="bg-base-200 border border-base-300 shadow-lg rounded-full px-4 py-2 flex items-center gap-2" id="resumeForm">
       {% csrf_token %}
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Enter website URL to analyze:</span>
-        </label>
-        <div class="flex gap-2">
-          <input type="url" name="url" placeholder="https://example.com" required class="input input-bordered w-full" />
-          <button type="submit" class="btn btn-primary">Analyze</button>
-        </div>
-      </div>
+      <input
+        type="text"
+        name="prompt"
+        placeholder="e.g. Game Developer with Unity experience"
+        class="flex-1 bg-base-200 text-base-content border-none outline-none focus:ring-0 rounded-full text-base"
+        required
+        value="{{ request.POST.prompt|default:'' }}"
+      />
+      <button type="submit" class="ml-2 p-2 rounded-full bg-gradient-to-br from-primary to-primary-focus text-white shadow-md hover:scale-105 transition-transform" aria-label="Generate Resume">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M14.752 11.168l-9.456-5.472a1 1 0 00-1.5.866v11.376a1 1 0 001.5.866l9.456-5.472a1 1 0 000-1.732z" />
+        </svg>
+      </button>
     </form>
   </div>
 
-  <!-- Loading Spinner (conditionally shown) -->
-  {% if loading %}
-  <div class="flex justify-center items-center h-40">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" role="alert" aria-live="assertive" aria-busy="true">
+    <div>
+      Generating&nbsp;
+      <span class="star">✨</span>
+      <span class="star">✨</span>
+      <span class="star">✨</span>
+      <span class="star">✨</span>
+    </div>
   </div>
-  {% endif %}
 
-  <!-- Results Dashboard -->
-  {% if report %}
-  <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <!-- Scripts -->
+  <script>
+    const form = document.getElementById('resumeForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const htmlTag = document.documentElement;
 
-    <!-- Performance -->
-    <div class="card bg-base-100 shadow-md">
-      <div class="card-body">
-        <h2 class="card-title">Performance</h2>
-        <progress class="progress progress-success w-full" value="{{ report.performance }}" max="100"></progress>
-        <p>Score: {{ report.performance }}/100</p>
-      </div>
-    </div>
+    loadingOverlay.style.display = 'none';
 
-    <!-- Accessibility -->
-    <div class="card bg-base-100 shadow-md">
-      <div class="card-body">
-        <h2 class="card-title">Accessibility</h2>
-        <progress class="progress progress-warning w-full" value="{{ report.accessibility }}" max="100"></progress>
-        <p>Score: {{ report.accessibility }}/100</p>
-      </div>
-    </div>
+    form.addEventListener('submit', () => {
+      loadingOverlay.style.display = 'flex';
+    });
 
-    <!-- Best Practices -->
-    <div class="card bg-base-100 shadow-md">
-      <div class="card-body">
-        <h2 class="card-title">Best Practices</h2>
-        <progress class="progress progress-info w-full" value="{{ report.best_practices }}" max="100"></progress>
-        <p>Score: {{ report.best_practices }}/100</p>
-      </div>
-    </div>
+    function updateThemeButton(theme) {
+      themeToggleBtn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
 
-    <!-- SEO -->
-    <div class="card bg-base-100 shadow-md">
-      <div class="card-body">
-        <h2 class="card-title">SEO</h2>
-        <progress class="progress progress-accent w-full" value="{{ report.seo }}" max="100"></progress>
-        <p>Score: {{ report.seo }}/100</p>
-      </div>
-    </div>
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = htmlTag.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      htmlTag.setAttribute('data-theme', newTheme);
+      updateThemeButton(newTheme);
+    });
 
-    <!-- PWA -->
-    <div class="card bg-base-100 shadow-md">
-      <div class="card-body">
-        <h2 class="card-title">PWA</h2>
-        <progress class="progress progress-secondary w-full" value="{{ report.pwa }}" max="100"></progress>
-        <p>Score: {{ report.pwa }}/100</p>
-      </div>
-    </div>
-
-  </div>
-  {% endif %}
-
+    updateThemeButton(htmlTag.getAttribute('data-theme'));
+  </script>
 </body>
 </html>

@@ -7,55 +7,93 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" />
 </head>
-<body class="bg-black min-h-screen flex items-center justify-center px-4">
+<body class="bg-gradient-to-br from-black via-gray-900 to-black min-h-screen flex items-center justify-center px-4 font-sans">
 
-  <div class="card w-full max-w-md shadow-2xl bg-neutral text-white">
+  <div class="card w-full max-w-md shadow-2xl bg-gray-800/60 backdrop-blur-lg text-white border border-gray-700">
     <div class="card-body">
-      <h2 class="text-3xl font-bold text-center text-accent mb-6">Create an Account</h2>
+      <h2 class="text-3xl font-bold text-center text-accent mb-6 drop-shadow-md">Create an Account</h2>
       
-      <form method="post" enctype="multipart/form-data" class="space-y-6">
+      <form method="post" enctype="multipart/form-data" id="registerForm" class="space-y-6">
         {% csrf_token %}
-        
+
         <!-- User form fields -->
         <div>
-          <h3 class="text-xl font-semibold mb-3">User Info</h3>
+          <h3 class="text-xl font-semibold mb-3 text-white">User Info</h3>
           {% for field in user_form %}
             <div class="form-control">
               <label class="label">
                 <span class="label-text text-white">{{ field.label }}</span>
               </label>
               {{ field }}
-              {% if field.errors %}
-                <p class="text-red-400 text-sm mt-1">{{ field.errors.0 }}</p>
-              {% endif %}
+              <p class="text-red-400 text-sm mt-1 hidden error-msg"></p>
             </div>
           {% endfor %}
         </div>
 
         <!-- Profile form fields -->
         <div>
-          <h3 class="text-xl font-semibold mb-3">Profile Info</h3>
+          <h3 class="text-xl font-semibold mb-3 text-white">Profile Info</h3>
           {% for field in profile_form %}
             <div class="form-control">
               <label class="label">
                 <span class="label-text text-white">{{ field.label }}</span>
               </label>
               {{ field }}
-              {% if field.errors %}
-                <p class="text-red-400 text-sm mt-1">{{ field.errors.0 }}</p>
-              {% endif %}
+              <p class="text-red-400 text-sm mt-1 hidden error-msg"></p>
             </div>
           {% endfor %}
         </div>
 
-        <button type="submit" class="btn btn-accent w-full">Register</button>
+        <button type="submit" class="btn btn-accent w-full shadow-lg hover:scale-[1.02] transition-transform">Register</button>
       </form>
 
       <div class="mt-4 text-center">
-        <a href="{% url 'login' %}" class="link link-info">Already have an account? Login</a>
+        <a href="{% url 'login' %}" class="link link-info hover:underline">Already have an account? Login</a>
       </div>
     </div>
   </div>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
+      const form = e.target;
+      let valid = true;
+
+      // Clear previous errors
+      form.querySelectorAll('.error-msg').forEach(msg => {
+        msg.textContent = '';
+        msg.classList.add('hidden');
+      });
+
+      form.querySelectorAll('.form-control input').forEach(input => {
+        const error = input.parentElement.querySelector('.error-msg');
+        if (input.value.trim() === '') {
+          error.textContent = `${input.name.replace('_', ' ')} is required.`;
+          error.classList.remove('hidden');
+          valid = false;
+        }
+
+        if (input.name === 'email') {
+          const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+          if (!emailPattern.test(input.value.trim())) {
+            error.textContent = 'Please enter a valid email address.';
+            error.classList.remove('hidden');
+            valid = false;
+          }
+        }
+
+        if (input.name === 'confirm_password') {
+          const password = form.querySelector('input[name="password"]').value;
+          if (input.value.trim() !== password) {
+            error.textContent = 'Passwords do not match.';
+            error.classList.remove('hidden');
+            valid = false;
+          }
+        }
+      });
+
+      if (!valid) e.preventDefault();
+    });
+  </script>
 
 </body>
 </html>

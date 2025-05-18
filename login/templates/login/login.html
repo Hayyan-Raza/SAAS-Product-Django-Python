@@ -7,13 +7,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" />
 </head>
-<body class="bg-black min-h-screen flex items-center justify-center px-4">
+<body class="bg-gradient-to-br from-black via-gray-900 to-black min-h-screen flex items-center justify-center px-4 font-sans">
 
-  <div class="card w-full max-w-md shadow-2xl bg-neutral text-white">
+  <div class="card w-full max-w-md shadow-2xl bg-gray-800/60 backdrop-blur-lg text-white border border-gray-700">
     <div class="card-body">
-      <h2 class="text-3xl font-bold text-center text-accent mb-6">Welcome Back</h2>
+      <h2 class="text-3xl font-bold text-center text-accent mb-6 drop-shadow-md">Welcome Back</h2>
       
-      <form method="post" class="space-y-4">
+      <form method="post" class="space-y-6" id="loginForm">
         {% csrf_token %}
         {% for field in form %}
           <div class="form-control">
@@ -21,19 +21,50 @@
               <span class="label-text text-white">{{ field.label }}</span>
             </label>
             {{ field }}
-            {% if field.errors %}
-              <p class="text-red-400 text-sm mt-1">{{ field.errors.0 }}</p>
-            {% endif %}
+            <p class="text-red-400 text-sm mt-1 hidden error-msg"></p>
           </div>
         {% endfor %}
-        <button type="submit" class="btn btn-accent w-full">Login</button>
+        <button type="submit" class="btn btn-accent w-full shadow-lg hover:scale-[1.02] transition-transform">Login</button>
       </form>
 
       <div class="mt-4 text-center">
-        <a href="{% url 'register' %}" class="link link-info">Don't have an account? Register</a>
+        <a href="{% url 'register' %}" class="link link-info hover:underline">Don't have an account? Register</a>
       </div>
     </div>
   </div>
+
+  <!-- ✅ Simple client-side validation -->
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      const form = e.target;
+      let valid = true;
+
+      form.querySelectorAll('.error-msg').forEach(msg => {
+        msg.textContent = '';
+        msg.classList.add('hidden');
+      });
+
+      form.querySelectorAll('.form-control input').forEach(input => {
+        const error = input.parentElement.querySelector('.error-msg');
+        if (input.value.trim() === '') {
+          error.textContent = `${input.name.replace('_', ' ')} is required.`;
+          error.classList.remove('hidden');
+          valid = false;
+        }
+
+        if (input.name === 'email') {
+          const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+          if (!emailPattern.test(input.value.trim())) {
+            error.textContent = 'Enter a valid email.';
+            error.classList.remove('hidden');
+            valid = false;
+          }
+        }
+      });
+
+      if (!valid) e.preventDefault();
+    });
+  </script>
 
 </body>
 </html>

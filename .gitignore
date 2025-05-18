@@ -2,3 +2,4 @@
 *.json
 venv/
 profile_pics/
+.env

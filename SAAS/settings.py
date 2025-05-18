@@ -8,7 +8,13 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
+
+
 """
+
+
+
+
 
 from pathlib import Path
 
@@ -24,6 +30,8 @@ SECRET_KEY = 'django-insecure-=1wh9h%l&#h4_gng$l2j_-*g8*&-mo3$m_v1t16qoch8gjnl@f
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+
 
 ALLOWED_HOSTS = []
 
